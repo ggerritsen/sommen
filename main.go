@@ -11,18 +11,21 @@ import (
 )
 
 func main() {
-	log.Println("Start (typ 'stop' om te stoppen)")
+	logger := log.New(os.Stdout, "", 0)
+	logger.Print("Start (typ 'stop' om te stoppen)")
 	rand.Seed(time.Now().Unix())
 
 	sc := bufio.NewScanner(os.Stdin)
 
 	outer: for {
 		som, expected := generateSom()
-		log.Printf("Wat is %s?\n", som)
 
-		for sc.Scan() {
+		for {
+			logger.Printf("%s = ", som)
+
+			sc.Scan()
 			if err := sc.Err(); err != nil {
-				log.Fatal(err)
+				logger.Fatal(err)
 			}
 			s := sc.Text()
 
@@ -32,19 +35,20 @@ func main() {
 
 			answer, err := strconv.Atoi(s)
 			if err != nil {
-				log.Fatal(err)
+				logger.Print("Daar ging iets mis, probeer het nog eens:")
+				continue
 			}
 
 			if answer == expected {
-				log.Printf("Goed gedaan!\n")
+				logger.Print("Goed gedaan!")
 				break
 			} else {
-				log.Printf("Helaas, probeer het nog eens?\n")
+				logger.Print("Helaas, probeer het nog eens:")
 			}
 		}
 	}
 
-	log.Println("Done")
+	logger.Print("Gestopt.")
 }
 
 func generateSom() (string, int) {
