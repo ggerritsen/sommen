@@ -17,7 +17,8 @@ func main() {
 
 	sc := bufio.NewScanner(os.Stdin)
 
-	outer: for {
+outer:
+	for {
 		som, expected := generateSom()
 
 		for {
@@ -51,9 +52,31 @@ func main() {
 	logger.Print("Gestopt.")
 }
 
-func generateSom() (string, int) {
-	a := rand.Int() % 50
-	b := rand.Int() % 50
+type operator struct {
+	op              string
+	compute         func(int, int) int
+	generateOperand func() int
+}
 
-	return fmt.Sprintf("%d + %d", a, b), a+b
+var operators = []operator{
+	{"+", func(a, b int) int { return a + b }, func() int { return rand.Int() % 51 }},
+	{"-", func(a, b int) int { return a - b }, func() int { return rand.Int() % 51 }},
+	{"x", func(a, b int) int { return a * b }, func() int { return rand.Int() % 11 }},
+}
+
+func generateSom() (string, int) {
+	o := operators[rand.Int() % 3]
+	a := o.generateOperand()
+	b := o.generateOperand()
+
+	// exclude negative answers
+	if o.op == "-" {
+		if a < b {
+			tmp := a
+			a = b
+			b = tmp
+		}
+	}
+
+	return fmt.Sprintf("%d %s %d", a, o.op, b), o.compute(a, b)
 }
